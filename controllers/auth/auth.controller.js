@@ -6,65 +6,88 @@ const jwt = require("jsonwebtoken")
 class AuthController {
     register = async (req, res, next) => {
         try {
-            const {name, email, password, confirm_password} = req.body
-            if(password == confirm_password) {
-                const hash = bcrypt.hashSync(password, bcrypt.genSaltSync(10))
-                await User.create({name, email, password:hash})
-
-                res.status(201).json({
-                    success: 'Thank you for registering. Please log in to access your account.',
-                })
-            } else {
-                next ({
+            const { name, email, password, confirm_password, phone, address } = req.body;
+    
+            // Regex patterns for email and password
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    
+            // Check if email and password meet the regex patterns
+            if (!emailRegex.test(email)) {
+                return next({
+                    message: 'Invalid email format.',
+                    status: 422
+                });
+            }
+    
+            if (!passwordRegex.test(password)) {
+                return next({
+                    message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.',
+                    status: 422
+                });
+            }
+    
+            if (password !== confirm_password) {
+                return next({
                     message: 'Password not confirmed.',
                     status: 422
-                })
+                });
             }
-        } catch(err) {
-            showError(err, next)
+    
+            const hash = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+            await User.create({ name, email, phone, address, password: hash });
+    
+            res.status(201).json({
+                success: 'Thank you for registering. Please log in to access your account.',
+            });
+        } catch (err) {
+            showError(err, next);
         }
-    }
+    };
+    
 
     login = async (req, res, next) => {
-        try{
-            const {email, password} = req.body
-            const user = await User.findOne({email})
-
-            if(user) {
-                if(bcrypt.compareSync(password, user.password)) {
-                    if(user.status) {
+        try {
+            const { email, password } = req.body;
+            const user = await User.findOne({ email });
+    
+            if (user) {
+                if (bcrypt.compareSync(password, user.password)) {
+                    if (user.status) {
                         const token = jwt.sign({
-                            id:user._id,
+                            id: user._id,
                             iat: Math.floor(Date.now() / 1000),
-                            exp: Math.floor(Date.now() / 1000) + (30*24*60*60)
-                        }, process.env.JWT_SECRET)
-
+                            // Set expiration to 1 year (365 days)
+                            exp: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60)
+                        }, process.env.JWT_SECRET);
+    
                         res.json({
                             token,
                             user
-                        })
+                        });
                     } else {
                         next({
-                            message:'Inactive user.',
+                            message: 'Inactive user.',
                             status: 403
-                        })
+                        });
                     }
                 } else {
                     next({
-                        message:'Incorrect password.',
+                        message: 'Incorrect password.',
                         status: 422
-                    })
+                    });
                 }
             } else {
                 next({
-                    message:'Incorrect email',
+                    message: 'Incorrect email',
                     status: 422
-                })
+                });
             }
-        } catch {
-
+        } catch (err) {
+            showError(err, next);
         }
-    }
+    };
+    
 }
 
 module.exports = new AuthController

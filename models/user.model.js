@@ -7,17 +7,25 @@ const User = model('User', new Schema({
     },
     email: {
         type: String,
-        require: true,
+        required: true,
         unique: true,
     },
     password: {
         type: String,
         required: true,
     },
+    phone: {
+        type: String,
+        required: true,
+    },
+    address: {
+        type: String,
+        required: true,
+    },
     type: {
         type: String,
-        enum: ['Admin', 'Journalists', 'Editors '],
-        default: 'Editors ',
+        enum: ['Admin', 'User', 'Editor'],
+        default: 'User', 
     },
     status: {
         type: Boolean,

@@ -20,7 +20,11 @@ const News = model('News',new Schema({
       images:{
         type: [String],
         required: true,
-    },
+      },
+      categoryId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+      },
       status: {
         type: String,
         enum: ['draft', 'published'],

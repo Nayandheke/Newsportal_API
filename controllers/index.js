@@ -1,3 +1,3 @@
 const AuthCtrl = require('./auth/auth.controller')
-
-module.exports = {AuthCtrl}
+const Cms = require('./cms')
+module.exports = {AuthCtrl, Cms}
