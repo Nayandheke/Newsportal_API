@@ -8,11 +8,9 @@ class AuthController {
         try {
             const { name, email, password, confirm_password, phone, address } = req.body;
     
-            // Regex patterns for email and password
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
     
-            // Check if email and password meet the regex patterns
             if (!emailRegex.test(email)) {
                 return next({
                     message: 'Invalid email format.',
@@ -57,7 +55,6 @@ class AuthController {
                         const token = jwt.sign({
                             id: user._id,
                             iat: Math.floor(Date.now() / 1000),
-                            // Set expiration to 1 year (365 days)
                             exp: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60)
                         }, process.env.JWT_SECRET);
     

@@ -2,7 +2,6 @@ const { showError, validationError } = require("../../lib")
 const { User } = require("../../models")
 const bcrypt = require("bcryptjs")
 
-
 class EditorController {
     index = async (req, res, next) => {
         try {
@@ -26,7 +25,7 @@ class EditorController {
                     status: 422
                 });
             }
-    
+
             if (!passwordRegex.test(password)) {
                 return next({
                     message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.',
@@ -70,7 +69,6 @@ class EditorController {
                 message,
                 status: 422
             })
-            c
         }
     }
 

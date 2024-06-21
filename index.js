@@ -21,8 +21,6 @@ app.use((error, req, res, next) => {
     })
 })
 
-
-
 app.listen(port, async () => {
     console.log(`Server started at http://localhost:${port}`);
     console.log('Press Ctrl+C to stop');

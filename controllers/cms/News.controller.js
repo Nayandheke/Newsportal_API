@@ -1,6 +1,7 @@
 const { showError, validationError } = require("../../lib")
 const { News } = require("../../models")
 const bcrypt = require("bcryptjs")
+const {unlinkSync} = require('node:fs')
 
 
 class NewsController {
@@ -76,7 +77,13 @@ class NewsController {
 
     destroy = async(req,res,next) => {
         try{
-            const news = await News.findByIdAndDelete(req.params.id)
+            let news = await News.findById(req.params.id)
+
+            for(let image of news.images) {
+                unlinkSync(`uploads/${image}`)
+            }
+            news = await News.findByIdAndDelete(req.params.id)
+
             if(news) {
                 res.json({
                     success:'News removed.'
