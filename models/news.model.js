@@ -27,9 +27,13 @@ const News = model('News',new Schema({
       },
       status: {
         type: String,
-        enum: ['draft', 'published'],
-        default: 'draft',
-      },
+        enum: ['Draft', 'Published'],
+        default: 'Draft', 
+    },
+      latest: {
+        type: Boolean,
+        default: true,
+    },
       featured: {
         type: Boolean,
         default: false,

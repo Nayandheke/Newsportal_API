@@ -7,9 +7,29 @@ const {unlinkSync} = require('node:fs')
 class NewsController {
     index = async (req, res, next) => {
         try {
-            const news = await News.find()
+            const news = await News.aggregate([
+                {$lookup:{from: 'categories', localField: 'categoryId', foreignField: '_id', as: 'category'}}
+            ]).exec()
 
-            res.json(news)
+            let result = news.map(news => {
+                return{
+                    id: news._id,
+                    title: news.title,
+                    author: news.author,
+                    content: news.content,
+                    description: news.description,
+                    categoryId: news.categoryId,
+                    latest: news.latest,
+                    featured: news.featured,
+                    status: news.status,
+                    images: news.images,
+                    createdAt: news.createdAt,
+                    updatedAt: news.updatedAt,
+                    categoryId: news.category[0],
+                    __v : news.__v
+                }
+            })
+            res.json(result)
         } catch(err) {
             showError(err, next)
         }
@@ -17,11 +37,11 @@ class NewsController {
 
     store = async (req, res, next) => {
         try {
-            const { title,author,content,description,categoryId,featured, status } = req.body;
+            const { title,author,content,description,categoryId,latest,featured, status } = req.body;
 
             let images = req.files.map(file => file.filename)
     
-            await News.create({ title,author,content,description,categoryId,featured, status, images });
+            await News.create({ title,author,content,description,categoryId,latest,featured, status, images });
     
             res.status(201).json({
                 success: 'News Created.',
@@ -50,7 +70,7 @@ class NewsController {
 
     update = async(req,res,next) => {
         try{
-            const {title,author,content,description,categoryId,featured, status} = req.body
+            const {title,author,content,description,categoryId,latest,featured, status} = req.body
 
             let news = await News.findById(req.params.id)
 
@@ -59,7 +79,7 @@ class NewsController {
                 ...req.files.map(file => file.filename)
             ]
 
-            news = await News.findByIdAndUpdate(req.params.id,{title,author,content,description,categoryId,featured, status, images})
+            news = await News.findByIdAndUpdate(req.params.id,{title,author,content,description,categoryId,latest,featured, status, images})
             if(news) {
                 res.json({
                     success:'News updated.'
