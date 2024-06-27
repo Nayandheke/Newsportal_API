@@ -6,8 +6,10 @@ const Category = model('Category', new Schema({
         required: true,
     },
     status: {
-        type: Boolean,
-        default: true,
+        type: String,
+        required: true,
+        enum: ['Draft', 'Published'],
+        default: 'Draft', 
     }
 },{
     timestamps: true,

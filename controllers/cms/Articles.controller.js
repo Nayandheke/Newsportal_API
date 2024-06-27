@@ -1,32 +1,32 @@
 const { showError, validationError } = require("../../lib")
-const { News } = require("../../models")
+const { Article } = require("../../models")
 const bcrypt = require("bcryptjs")
 const {unlinkSync} = require('node:fs')
 
 
-class NewsController {
+class ArticlesController {
     index = async (req, res, next) => {
         try {
-            const news = await News.aggregate([
+            const articles = await Article.aggregate([
                 {$lookup:{from: 'categories', localField: 'categoryId', foreignField: '_id', as: 'category'}}
             ]).exec()
 
-            let result = news.map(news => {
+            let result = articles.map(article => {
                 return{
-                    id: news._id,
-                    title: news.title,
-                    author: news.author,
-                    content: news.content,
-                    description: news.description,
-                    categoryId: news.categoryId,
-                    latest: news.latest,
-                    featured: news.featured,
-                    status: news.status,
-                    images: news.images,
-                    createdAt: news.createdAt,
-                    updatedAt: news.updatedAt,
-                    categoryId: news.category[0],
-                    __v : news.__v
+                    id: article._id,
+                    title: article.title,
+                    author: article.author,
+                    content: article.content,
+                    description: article.description,
+                    categoryId: article.categoryId,
+                    latest: article.latest,
+                    featured: article.featured,
+                    status: article.status,
+                    images: article.images,
+                    createdAt: article.createdAt,
+                    updatedAt: article.updatedAt,
+                    categoryId: article.category[0],
+                    __v : article.__v
                 }
             })
             res.json(result)
@@ -41,10 +41,10 @@ class NewsController {
 
             let images = req.files.map(file => file.filename)
     
-            await News.create({ title,author,content,description,categoryId,latest,featured, status, images });
+            await Article.create({ title,author,content,description,categoryId,latest,featured, status, images });
     
             res.status(201).json({
-                success: 'News Created.',
+                success: 'Articles Created.',
             });
         } catch(err) {
             validationError(err, next)
@@ -53,13 +53,13 @@ class NewsController {
 
     show = async(req,res,next) => {
         try{
-            const news = await News.findById(req.params.id)
+            const article = await Article.findById(req.params.id)
 
-            if(news) {
-                res.json(news)
+            if(article) {
+                res.json(article)
             } else {
                 next({
-                    message:'News not found',
+                    message:'Articles not found',
                     status:404,
                 })
             }
@@ -72,21 +72,21 @@ class NewsController {
         try{
             const {title,author,content,description,categoryId,latest,featured, status} = req.body
 
-            let news = await News.findById(req.params.id)
+            let articles = await Article.findById(req.params.id)
 
             let images = [
-                ...news.images,
+                ...articles.images,
                 ...req.files.map(file => file.filename)
             ]
 
-            news = await News.findByIdAndUpdate(req.params.id,{title,author,content,description,categoryId,latest,featured, status, images})
-            if(news) {
+            articles = await Article.findByIdAndUpdate(req.params.id,{title,author,content,description,categoryId,latest,featured, status, images})
+            if(articles) {
                 res.json({
-                    success:'News updated.'
+                    success:'Article updated.'
                 })
             } else {
                 next({
-                    message:'News not found.',
+                    message:'Article not found.',
                     status:404,
                 })
             }
@@ -97,20 +97,20 @@ class NewsController {
 
     destroy = async(req,res,next) => {
         try{
-            let news = await News.findById(req.params.id)
+            let article = await Article.findById(req.params.id)
 
-            for(let image of news.images) {
+            for(let image of article.images) {
                 unlinkSync(`uploads/${image}`)
             }
-            news = await News.findByIdAndDelete(req.params.id)
+            article = await Article.findByIdAndDelete(req.params.id)
 
-            if(news) {
+            if(article) {
                 res.json({
-                    success:'News removed.'
+                    success:'Article removed.'
                 })
             } else {
                 next({
-                    message:'News not found.',
+                    message:'Article not found.',
                     status:404,
                 })
             }
@@ -120,4 +120,4 @@ class NewsController {
     }
 } 
 
-module.exports = new NewsController
+module.exports = new ArticlesController 

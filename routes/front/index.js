@@ -1,10 +1,10 @@
 const express = require('express')
-const newsRoutes = require('./news.routes')
+const articleRoutes = require('./article.routes')
 const listRoutes = require('./list.routes')
 
 const router = express.Router()
 
-router.use( newsRoutes)
+router.use( articleRoutes)
 
 router.use( listRoutes)
 

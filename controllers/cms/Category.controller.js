@@ -18,15 +18,19 @@ class CategoryController {
         try {
             const { name, status } = req.body;
     
-            await Category.create({ name, status });
+            // Create a new Category document with name and status
+            const newCategory = new Category({ name, status });
+            await newCategory.save();
     
             res.status(201).json({
                 success: 'Category Created.',
+                category: newCategory, // Optionally, send back the created category
             });
         } catch(err) {
-            validationError(err, next)
+            // Handle validation errors or other errors
+            validationError(err, next);
         }
-    }
+    };
 
     show = async(req,res,next) => {
         try{

@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
 
-const News = model('News',new Schema({
+const Articles = model('Articles',new Schema({
       title: {
         type: String,
         required: true,
@@ -27,6 +27,7 @@ const News = model('News',new Schema({
       },
       status: {
         type: String,
+        required: true,
         enum: ['Draft', 'Published'],
         default: 'Draft', 
     },
@@ -47,4 +48,4 @@ const News = model('News',new Schema({
   )
 );
 
-module.exports = News;
+module.exports = Articles;
