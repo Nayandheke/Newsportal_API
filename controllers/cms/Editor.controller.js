@@ -90,22 +90,39 @@ class EditorController {
     }
 
     update = async(req,res,next) => {
-        try{
+        try {
             const {name, phone, address, status} = req.body
 
-            const editor = await User.findByIdAndUpdate(req.params.id,{name, phone, address, status})
+            const editor = await User.findByIdAndUpdate(req.params.id, {name, phone, address, status })
+
             if(editor) {
                 res.json({
-                    success:'Editor updated.'
-                })
-            } else {
-                next({
-                    message:'Editor not found.',
-                    status:404,
-                })
+                    success: 'Editor updated.'
+                })       
             }
-        } catch(err) {
-            validationError(err,next)
+            else{
+                next({
+                    message: 'Editor not found',
+                    status: 404
+                })
+            }     
+        } catch (err) {
+            let message = {}
+            if('errors' in err){
+                for(let k in err.errors) {
+                    message = {
+                        ...message, [k]: err.errors[k].message
+                    }
+                }
+            }
+            else{
+                showError(err,next)
+            }
+            next({
+                message,
+                status: 422
+            })
+            
         }
     }
 
