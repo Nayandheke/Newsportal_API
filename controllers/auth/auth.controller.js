@@ -10,6 +10,7 @@ class AuthController {
     
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+            const phoneRegex = /^98\d{8}$/;
     
             if (!emailRegex.test(email)) {
                 return next({
@@ -27,21 +28,52 @@ class AuthController {
     
             if (password !== confirm_password) {
                 return next({
-                    message: 'Password not confirmed.',
+                    message: 'Password confirmation does not match.',
+                    status: 422
+                });
+            }
+    
+            if (!phoneRegex.test(phone)) {
+                return next({
+                    message: 'Phone number must be exactly 10 digits and start with 98.',
                     status: 422
                 });
             }
     
             const hash = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+    
             await User.create({ name, email, phone, address, password: hash });
     
             res.status(201).json({
                 success: 'Thank you for registering. Please log in to access your account.',
             });
         } catch (err) {
-            showError(err, next);
+            let message = {};
+            if (err.name === 'ValidationError' && 'errors' in err) {
+                for (let k in err.errors) {
+                    message = {
+                        ...message, [k]: err.errors[k].message
+                    };
+                }
+            } else if (err.code === 11000) {
+                message = {
+                    email: 'Email already in use.',
+                };
+            } else {
+                message = {
+                    error: 'Something went wrong. Please try again.'
+                };
+            }
+    
+            next({
+                message,
+                status: 422
+            });
         }
     };
+    
+    
+    
     
 
     login = async (req, res, next) => {

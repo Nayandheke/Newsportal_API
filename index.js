@@ -2,6 +2,7 @@ const express = require ('express')
 const routes = require('./routes')
 const { config } = require('dotenv')
 const mongoose = require('mongoose');
+const cors = require('cors')
 
 config()
 
@@ -9,6 +10,8 @@ const port = process.env.PORT_ADDR
 const mongoAddr = process.env.MONGO_ADDR
 
 const app = express()
+
+app.use(cors())
 
 app.use(express.json())
 app.use(express.urlencoded())

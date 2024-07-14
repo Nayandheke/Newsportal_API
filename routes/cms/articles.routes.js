@@ -16,4 +16,6 @@ router.route('/:id')
     .patch(uploadFile(mimeList).array('images'),Cms.ArticleCtrl.update)
     .delete(Cms.ArticleCtrl.destroy)
 
+router.delete('/:id/images/:filename' , Cms.ArticleCtrl.image)
+
 module.exports = router

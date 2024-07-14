@@ -118,6 +118,48 @@ class ArticlesController {
             showError(err, next)
         }
     }
+
+    image = async (req, res, next) => {
+        try {
+            const {filename, id} = req.params
+
+            let article = await Article.findById(id);
+
+            if (article) {
+                if(article.images.length > 1){
+
+                    let temp = []
+    
+                    for (let image of article.images) {
+                        if(filename == image) {
+                            unlinkSync(`uploads/${image}`)
+                        }
+                        else {
+                            temp.push(image)
+                        }
+                    }
+                        await Article.findByIdAndUpdate(id, {images: temp})
+
+                        res.json({
+                            success: 'Article image removed.'
+                        })
+                } else{
+                    next({
+                        message: 'At least one image is must.',
+                        status: 403,
+                    })
+                }
+            }
+            else {
+                next({
+                    message: 'Article not found',
+                    status: 404,
+                })
+            }
+        } catch (err) {
+            showError(err, next)
+        }
+    }
 } 
 
 module.exports = new ArticlesController 

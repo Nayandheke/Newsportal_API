@@ -28,7 +28,7 @@ class ArticleController {
 
     byId = async (req,res,next) => {
         try{
-            const article =  await Article.findOne({_id: req.params.id, featured: true}).exec()
+            const article =  await Article.findOne({_id: req.params.id, status: true}).exec()
                 if(article) {
                     const category = await Category.findById(article.categoryId)
                         res.json ({
@@ -61,7 +61,7 @@ class ArticleController {
 
     byCategoryId = async (req, res, next) => {
         try{
-            const articles = await Article.find({categoryId: req.params.id, featured: true}).exec()
+            const articles = await Article.find({categoryId: req.params.id, status: true}).exec()
 
             res.json(articles)
 
@@ -72,7 +72,6 @@ class ArticleController {
 
     similar = async (req, res, next) => {
         try {
-            // Find the current article to get its category
             const article = await Article.findById(req.params.id).exec();
             
             if (!article) {
@@ -82,13 +81,12 @@ class ArticleController {
                 });
             }
             
-            // Find similar articles in the same category, excluding the current article
             const similarArticles = await Article.find({
                 categoryId: article.categoryId,
-                _id: { $ne: article._id }  // Exclude the current article
+                _id: { $ne: article._id }
             })
-            .sort({ createdAt: 'desc' }) // Optional: Sort by creation date or any other criterion
-            .limit(5) // Optional: Limit the number of similar articles
+            .sort({ createdAt: 'desc' }) 
+            .limit(5) 
             .exec();
     
             res.json(similarArticles);
@@ -100,14 +98,13 @@ class ArticleController {
     search = async (req, res, next) => {
         try {
             const articles =  await Article.aggregate([
-                {$match : {status: 'Published', title: {$regex: req.query.term,
+                {$match : {status: true, title: {$regex: req.query.term,
                 $options: 'i'}}}
             ]).exec()
             res.json(articles)
             
         } catch (err) {
             showError(err, next)
-            
         }
     }
 }

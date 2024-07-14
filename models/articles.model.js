@@ -25,11 +25,9 @@ const Articles = model('Articles',new Schema({
         type: Schema.Types.ObjectId,
         required: true,
       },
-      status: {
-        type: String,
-        required: true,
-        enum: ['Draft', 'Published'],
-        default: 'Draft', 
+    status: {
+        type: Boolean,
+        default: true,
     },
       latest: {
         type: Boolean,

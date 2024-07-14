@@ -18,6 +18,7 @@ class EditorController {
     
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+            const phoneRegex = /^98\d{8}$/;
     
             if (!emailRegex.test(email)) {
                 return next({
@@ -25,7 +26,7 @@ class EditorController {
                     status: 422
                 });
             }
-
+    
             if (!passwordRegex.test(password)) {
                 return next({
                     message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.',
@@ -35,42 +36,47 @@ class EditorController {
     
             if (password !== confirm_password) {
                 return next({
-                    message: 'Password not confirmed.',
+                    message: 'Password confirmation does not match.',
+                    status: 422
+                });
+            }
+    
+            if (!phoneRegex.test(phone)) {
+                return next({
+                    message: 'Phone number must be exactly 10 digits and start with 98.',
                     status: 422
                 });
             }
     
             const hash = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+    
             await User.create({ name, email, phone, address, password: hash, status, type: 'Editor' });
     
             res.status(201).json({
                 success: 'Editor Created.',
             });
-        } catch(err) {
-            let message = {}
-            if('errors' in err){
-                for(let k in err.errors) {
+        } catch (err) {
+            let message = {};
+            if (err.name === 'ValidationError' && 'errors' in err) {
+                for (let k in err.errors) {
                     message = {
                         ...message, [k]: err.errors[k].message
-                    }
+                    };
                 }
-            }
-            else{
-                if(err.message.startsWith('E11000')){
-                    message = {
-                        email: "Email already in use.",
-                    }
-                }
-                else{
-                    showError(err,next)
-                }
+            } else if (err.code === 11000) {
+                message = {
+                    email: "Email already in use.",
+                };
+            } else {
+                return next(err);
             }
             next({
                 message,
                 status: 422
-            })
+            });
         }
-    }
+    };
+    
 
     show = async(req,res,next) => {
         try{
@@ -89,42 +95,51 @@ class EditorController {
         }
     }
 
-    update = async(req,res,next) => {
+    update = async (req, res, next) => {
         try {
-            const {name, phone, address, status} = req.body
-
-            const editor = await User.findByIdAndUpdate(req.params.id, {name, phone, address, status })
-
-            if(editor) {
+            const { name, phone, address, status } = req.body;
+    
+            // Validation regex patterns
+            const phoneRegex = /^98\d{8}$/; // Phone number must start with 98 and be followed by exactly 8 digits
+    
+            // Validate phone number format
+            if (!phoneRegex.test(phone)) {
+                return next({
+                    message: 'Phone number must be exactly 10 digits and start with 98.',
+                    status: 422
+                });
+            }
+    
+            const editor = await User.findByIdAndUpdate(req.params.id, { name, phone, address, status });
+    
+            if (editor) {
                 res.json({
                     success: 'Editor updated.'
-                })       
-            }
-            else{
+                });
+            } else {
                 next({
                     message: 'Editor not found',
                     status: 404
-                })
-            }     
+                });
+            }
         } catch (err) {
-            let message = {}
-            if('errors' in err){
-                for(let k in err.errors) {
+            let message = {};
+            if ('errors' in err) {
+                for (let k in err.errors) {
                     message = {
                         ...message, [k]: err.errors[k].message
-                    }
+                    };
                 }
-            }
-            else{
-                showError(err,next)
+            } else {
+                showError(err, next);
             }
             next({
                 message,
                 status: 422
-            })
-            
+            });
         }
-    }
+    };
+    
 
     destroy = async(req,res,next) => {
         try{
